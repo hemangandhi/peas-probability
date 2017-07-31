@@ -2,7 +2,10 @@ module Simulation (Event (Event, And, Or, Given, Not),
                    Simulation,
                    foldOnSimulation,
                    mkEmptySimulation,
-                   getCountsOfThings) where
+                   getCountsOfThings,
+                   simulate,
+                   simulateWithCounter,
+                   printSimulation) where
 
 
 import qualified Data.Map as Map
@@ -48,3 +51,14 @@ mkEmptySimulation = foldr (flip Map.insert $ 0) Map.empty
 getCountsOfThings :: Ord t => [t] -> Map.Map t Int
 getCountsOfThings = foldr doInsert Map.empty
     where doInsert val accMap = Map.insertWith (+) val 1 accMap
+
+simulate :: (Foldable c) => [Event t] -> c t -> Simulation t
+simulate evs = foldr foldOnSimulation (mkEmptySimulation evs)
+
+simulateWithCounter :: (Foldable c) => [Event t] -> c t -> Simulation t
+simulateWithCounter evs = simulate (evs ++ [Event "Counter" (const True)])
+
+printSimulation :: Simulation t -> IO ()
+printSimulation sim = putStrLn "Event \t Occurences"
+                    >> (mapM_ (\(k, v) -> putStrLn (show k ++ "\t" ++ show v))
+                              $ Map.assocs sim)
