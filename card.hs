@@ -40,6 +40,6 @@ hasNOfKind n crds = n < (foldr max 0 $ getCountsOfThings $ map getValue crds)
 
 main :: IO ()
 main = (deal 12 $ nShuffledDecks (mkDecks 2) 1000) >>= return . simulateWithCounter events
-                                                >>= printSimulation
+                                                   >>= tryPrintWithProbability
     where events = [Event "two of a kind" (hasNOfKind 2),  Event "three of a kind" (hasNOfKind 3),
                     Event "four of a kind" (hasNOfKind 4), Event "five of a kind" (hasNOfKind 5)]

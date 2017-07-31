@@ -5,7 +5,8 @@ module Simulation (Event (Event, And, Or, Given, Not),
                    getCountsOfThings,
                    simulate,
                    simulateWithCounter,
-                   printSimulation) where
+                   printSimulation,
+                   tryPrintWithProbability) where
 
 
 import qualified Data.Map as Map
@@ -30,7 +31,7 @@ instance Eq (Event t) where
 instance Ord (Event t) where
     compare ev1 ev2 = compare (show ev1) (show ev2)
 
-type Simulation t = Map.Map (Event t) Int
+type Simulation t = Map.Map (Event t) Float
 
 isEventFired :: Event t -> t -> Bool
 isEventFired (Event _ fn) t = fn t
@@ -59,6 +60,13 @@ simulateWithCounter :: (Foldable c) => [Event t] -> c t -> Simulation t
 simulateWithCounter evs = simulate (evs ++ [Event "Counter" (const True)])
 
 printSimulation :: Simulation t -> IO ()
-printSimulation sim = putStrLn "Event \t Occurences"
+printSimulation sim = putStrLn "Event \t\t Occurences"
                     >> (mapM_ (\(k, v) -> putStrLn (show k ++ "\t" ++ show v))
                               $ Map.assocs sim)
+
+tryPrintWithProbability :: Simulation t -> IO ()
+tryPrintWithProbability sim = case  Map.lookup (Event "Counter" (const True)) sim of
+                              Nothing -> printSimulation sim
+                              Just ct -> putStrLn "Event \t\t Occurences \t Probability"
+                                         >> (mapM_ (printResult ct) $ Map.assocs sim)
+    where printResult ct (k, v) = putStrLn $ show k ++ "\t" ++ show v ++ "\t" ++ show (v / ct)
